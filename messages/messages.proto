@@ -1,0 +1,96 @@
+syntax = "proto2";
+package messages;
+
+enum MessageType {
+  JOIN_MESSAGE = 0;
+  TRANSACTION_MESSAGE = 1;
+  NODE_QUERY_MESSAGE = 2;
+  SYNC_GRAPH_MESSAGE = 3;
+  REQUEST_SYNC_GRAPH_MESSAGE = 4;
+  BATCH_TRANSACTIONS_MESSAGE = 5;
+}
+
+message CommonMessage {
+  required MessageType message_type = 1;
+
+  oneof message_body {
+    Join join = 2;
+    Transaction transaction = 3;
+    NodeQuery node_query = 4;
+    SyncGraph sync_graph = 5;
+    RequestSyncGraph request_sync_graph = 6;
+    BatchTransactions batch_transactions = 7;
+  }
+}
+
+message NodeQuery {
+  required string txn_hash = 1;
+  required bool is_strongly_preferred = 2;
+  required string from_address = 3;
+  required uint32 from_port = 4;
+}
+
+message CheckBalance {
+  required string address = 1;
+}
+
+message BalanceResponse {
+  required string address = 1;
+  required uint64 balance = 2;
+  required uint32 nonce = 3;
+}
+
+message ConflictSet {
+  repeated string hashes = 1;
+}
+
+message BatchTransactions {
+  repeated Transaction transactions = 1;
+}
+
+message Transaction {
+  required string sender = 1;
+  required string recipient = 2;
+  required uint64 nonce = 3;
+  required uint64 amount = 4;
+  required string data = 5;
+  required string hash = 6;
+
+  repeated string parents = 7;
+  repeated string children = 8;
+
+  optional string signature = 9;
+  required string sender_pubkey = 10;
+  optional bool chit = 11;
+  optional bool queried = 12;
+  optional bool accepted = 13;
+}
+
+message RequestTransaction {
+  required string hash = 1;
+}
+
+message SyncGraph {
+  repeated Transaction transactions = 1;
+  repeated ConflictSet conflicts = 2;
+}
+
+message RequestSyncGraph {
+  required string address = 1;
+  required int32 port = 2;
+  required string pubkey = 3;
+  optional string target_txn_hash = 4;
+}
+
+message Join {
+  required string address = 1;
+  required int32 port = 2;
+  required string pubkey = 3;
+  optional string nickname = 4;
+
+  enum Type {
+    INIT_JOIN = 0;
+    ACK_JOIN = 1;
+  } 
+  required Type join_type = 5;
+}
